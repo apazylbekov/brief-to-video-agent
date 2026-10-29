@@ -1,0 +1,13 @@
+#!/bin/sh
+# Block commits that add secrets. Rules: .gitleaks.toml (gitleaks defaults + Higgsfield keys).
+# Enable once per clone: git config core.hooksPath .githooks
+
+# GUI git clients often skip the login-shell PATH; ~/.local/bin is where gitleaks is installed.
+PATH="$HOME/.local/bin:$PATH"
+
+if ! command -v gitleaks >/dev/null 2>&1; then
+    echo "pre-commit: gitleaks not found on PATH; install it (see CLAUDE.md)." >&2
+    exit 1
+fi
+
+exec gitleaks git --pre-commit --staged --redact --no-banner --verbose

@@ -1,0 +1,20 @@
+# gitleaks' built-in rules plus Higgsfield credentials, which the built-ins don't recognize.
+# Picked up automatically from the repo root by `gitleaks git` and .githooks/pre-commit.
+title = "brief-to-video-agent"
+
+[extend]
+useDefault = true
+
+[[rules]]
+id = "higgsfield-api-key"
+description = "Higgsfield API key (HF_KEY): UUID key id, colon, 64-hex secret"
+regex = '''(?i)\b[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}:[0-9a-f]{64}\b'''
+
+# The SDK also accepts HF_API_KEY + HF_API_SECRET. A bare 64-hex secret looks like any
+# sha256 (uv.lock is full of them), so this rule only fires next to the variable name.
+[[rules]]
+id = "higgsfield-api-secret"
+description = "Higgsfield API secret assigned to HF_API_SECRET"
+regex = '''(?i)\bhf_api_secret["']?\s*[:=]\s*["']?([0-9a-f]{64})\b'''
+secretGroup = 1
+keywords = ["hf_api_secret"]

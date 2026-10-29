@@ -1,0 +1,32 @@
+[project]
+name = "brief-to-video-agent"
+version = "0.1.0"
+description = "One command: request -> creative brief -> shot list -> Higgsfield clips -> QA -> HTML report"
+requires-python = ">=3.12"
+dependencies = [
+    "google-genai>=2.34.0",
+    "higgsfield-client>=0.2.0",
+    "httpx>=0.28.1",
+    "mcp>=2.3,<3",
+    "numpy>=2.5.4",
+    "pydantic>=2.14.1",
+    "python-dotenv>=1.2.4",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+# ANN enforces the "type hints everywhere" rule from CLAUDE.md.
+select = ["E", "F", "W", "I", "UP", "B", "ANN"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
