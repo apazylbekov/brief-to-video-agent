@@ -15,5 +15,11 @@ __pycache__/
 runs/
 *.mp4
 
+# Embedding cache, rebuilt from data/briefs.json (vectors + fingerprint sidecar)
+data/brief_vectors.*
+
 # Local reference material
 assets/
+
+# Personal learning log
+DONE_SO_FAR.md

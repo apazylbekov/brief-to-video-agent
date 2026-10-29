@@ -1,0 +1,367 @@
+[
+  {
+    "id": "food-01",
+    "brand": "Kettlebird",
+    "product": "Sparkling hibiscus iced tea in 330 ml cans, zero sugar",
+    "audience": "Health-conscious office workers aged 22-35 looking for a soda alternative",
+    "goal": "Drive trial in the first month of the supermarket launch",
+    "tone": "Bright, playful, a little cheeky",
+    "key_message": "All the fizz of soda, none of the sugar.",
+    "must_include": [
+      "can cracking open with visible fizz",
+      "deep red hibiscus colour",
+      "zero sugar callout on screen",
+      "logo end card"
+    ],
+    "platform": "TikTok"
+  },
+  {
+    "id": "food-02",
+    "brand": "Quillfield",
+    "product": "Barista oat milk that steams into silky microfoam",
+    "audience": "Home coffee enthusiasts and independent café baristas",
+    "goal": "Win shelf space in independent cafés and grow home-barista sales",
+    "tone": "Calm, craft-focused, ASMR-like",
+    "key_message": "Pours like dairy, tastes like oats, foams like a pro.",
+    "must_include": [
+      "slow-motion latte art pour",
+      "steam wand close-up",
+      "carton next to the finished cup"
+    ],
+    "platform": "Instagram Reels"
+  },
+  {
+    "id": "food-03",
+    "brand": "Noodlefold",
+    "product": "Frozen hand-folded dumplings with chili crisp, ready in 8 minutes",
+    "audience": "University students and busy young professionals who cook for one",
+    "goal": "Grow repeat purchases through online grocery apps",
+    "tone": "Energetic, comforting, late-night snack vibe",
+    "key_message": "Restaurant dumplings from your freezer in eight minutes.",
+    "must_include": [
+      "dumplings sizzling in a pan",
+      "chili crisp drizzle in close-up",
+      "8-minute timer on screen"
+    ],
+    "platform": "TikTok"
+  },
+  {
+    "id": "food-04",
+    "brand": "Hollowcrest",
+    "product": "Small-batch fermented habanero hot sauce, limited smoked-mango edition",
+    "audience": "Adventurous home cooks and hot-sauce collectors aged 25-45",
+    "goal": "Sell out the first batch of the limited smoked-mango flavour",
+    "tone": "Bold, irreverent, with a wink of danger",
+    "key_message": "Fermented slow, burns bright.",
+    "must_include": [
+      "slow-motion drop of sauce landing on a taco",
+      "flame-orange bottle",
+      "hand-numbered batch label"
+    ],
+    "platform": "YouTube Shorts"
+  },
+  {
+    "id": "fitness-01",
+    "brand": "Pacebloom",
+    "product": "Running app with a 9-week couch-to-5K plan and audio coaching",
+    "audience": "Adults aged 25-45 who have never run regularly",
+    "goal": "Increase app installs and week-one plan completion",
+    "tone": "Warm, encouraging, zero judgment",
+    "key_message": "Your first 5K starts with one minute of running.",
+    "must_include": [
+      "beginner runner jogging at sunrise",
+      "phone showing the week-one plan",
+      "finish-line moment",
+      "app store badge"
+    ],
+    "platform": "Instagram Reels"
+  },
+  {
+    "id": "fitness-02",
+    "brand": "Ironfern",
+    "product": "Adjustable kettlebell, 8 to 24 kg in one handle",
+    "audience": "Apartment dwellers who train at home with limited space",
+    "goal": "Drive direct-to-consumer sales ahead of the New Year fitness season",
+    "tone": "Confident, no-nonsense, gritty",
+    "key_message": "A whole rack of kettlebells in one corner of your room.",
+    "must_include": [
+      "weight dial clicking from 8 to 24 kg",
+      "kettlebell swing in a small living room",
+      "single kettlebell replacing a cluttered weight rack"
+    ],
+    "platform": "YouTube Shorts"
+  },
+  {
+    "id": "fitness-03",
+    "brand": "Saltrise",
+    "product": "Effervescent citrus electrolyte tablets for endurance sport",
+    "audience": "Marathon runners, cyclists and trail runners",
+    "goal": "Become the go-to hydration brand at spring race events",
+    "tone": "Focused, performance-driven, cinematic",
+    "key_message": "Replace what you sweat out, mile after mile.",
+    "must_include": [
+      "tablet dissolving in a clear bottle",
+      "cyclist on a hot mountain climb",
+      "sweat droplets in close-up"
+    ],
+    "platform": "TikTok"
+  },
+  {
+    "id": "fitness-04",
+    "brand": "Ropeyard",
+    "product": "Smart jump rope that counts skips and syncs to a workout app",
+    "audience": "Busy parents and remote workers who want 10-minute workouts",
+    "goal": "Grow paid subscriptions to the companion workout app",
+    "tone": "Upbeat, rhythmic, gamified",
+    "key_message": "Ten minutes, one rope, every skip counted.",
+    "must_include": [
+      "skip counter glowing in the handle",
+      "jump sequence cut to the beat",
+      "leaderboard on a phone screen"
+    ],
+    "platform": "TikTok"
+  },
+  {
+    "id": "travel-01",
+    "brand": "Northwake Rail",
+    "product": "Sleeper-train cabins on an overnight Silk Road route",
+    "audience": "Slow-travel fans and remote workers aged 28-50 who avoid flying",
+    "goal": "Sell out cabins for the autumn season",
+    "tone": "Romantic, nostalgic, unhurried",
+    "key_message": "Fall asleep in one city, wake up in another.",
+    "must_include": [
+      "window view of the steppe at golden hour",
+      "cozy cabin with fresh linens",
+      "morning tea served in the cabin"
+    ],
+    "platform": "Instagram Reels"
+  },
+  {
+    "id": "travel-02",
+    "brand": "Tidepost Hostels",
+    "product": "Design hostels with private sleeping pods and rooftop co-working",
+    "audience": "Solo backpackers and digital nomads aged 20-32",
+    "goal": "Increase direct bookings over third-party booking sites",
+    "tone": "Social, sunny, spontaneous",
+    "key_message": "Your own pod, a rooftop full of friends.",
+    "must_include": [
+      "pod curtain sliding open",
+      "rooftop sunset hangout",
+      "laptop on a rooftop desk",
+      "book-direct discount on screen"
+    ],
+    "platform": "TikTok"
+  },
+  {
+    "id": "travel-03",
+    "brand": "Yonderbee",
+    "product": "App that books surprise weekend getaways within a 3-hour radius",
+    "audience": "Couples and friend groups aged 25-40 stuck in a weekend routine",
+    "goal": "Drive first bookings from new app users",
+    "tone": "Curious, playful, a bit mysterious",
+    "key_message": "Pack a bag. We'll pick the place.",
+    "must_include": [
+      "sealed envelope revealing the destination",
+      "car driving into the countryside",
+      "destination reveal screen in the app"
+    ],
+    "platform": "YouTube Shorts"
+  },
+  {
+    "id": "travel-04",
+    "brand": "Glassfjord Expeditions",
+    "product": "Small-ship fjord cruises with a maximum of 12 guests",
+    "audience": "Retired couples and nature photographers aged 50-70",
+    "goal": "Fill early-bird berths for next summer's season",
+    "tone": "Majestic, serene, awe-inspiring",
+    "key_message": "The fjords up close, with only twelve fellow guests.",
+    "must_include": [
+      "aerial shot of a small ship in a fjord",
+      "waterfall seen from the deck",
+      "guests with cameras at the rail"
+    ],
+    "platform": "YouTube Shorts"
+  },
+  {
+    "id": "tech-01",
+    "brand": "Hushfinch",
+    "product": "Noise-cancelling wireless earbuds with a 30-hour battery",
+    "audience": "Urban commuters and open-office workers aged 20-40",
+    "goal": "Build awareness for the second-generation earbuds launch",
+    "tone": "Sleek, minimal, a sigh of relief",
+    "key_message": "Turn the city down.",
+    "must_include": [
+      "noisy metro carriage fading to silence",
+      "earbud clicking into its case",
+      "30-hour battery callout"
+    ],
+    "platform": "Instagram Reels"
+  },
+  {
+    "id": "tech-02",
+    "brand": "Tallyroot",
+    "product": "Budgeting app that automatically sets aside tax for freelancers",
+    "audience": "Freelancers and creators aged 22-40 with irregular income",
+    "goal": "Convert free-trial users into paid subscribers",
+    "tone": "Reassuring, clear, lightly humorous",
+    "key_message": "Get paid, and your tax money is already put aside.",
+    "must_include": [
+      "incoming payment splitting into tax and spending pots",
+      "relaxed freelancer at a café table",
+      "free trial callout"
+    ],
+    "platform": "TikTok"
+  },
+  {
+    "id": "tech-03",
+    "brand": "Warmloop",
+    "product": "Smart thermostat that learns your schedule and cuts heating bills",
+    "audience": "Homeowners and renters aged 30-55 worried about energy costs",
+    "goal": "Drive pre-orders before winter",
+    "tone": "Cozy, trustworthy, practical",
+    "key_message": "A warm home that costs less to heat.",
+    "must_include": [
+      "thermostat dial glowing on a wall",
+      "family in a cozy living room",
+      "monthly savings graph on a phone"
+    ],
+    "platform": "YouTube Shorts"
+  },
+  {
+    "id": "tech-04",
+    "brand": "Inkwhit",
+    "product": "E-ink tablet for handwritten notes that converts handwriting to text",
+    "audience": "Students, researchers and writers who prefer paper",
+    "goal": "Grow back-to-school sales",
+    "tone": "Thoughtful, focused, quietly clever",
+    "key_message": "Feels like paper. Searches like a computer.",
+    "must_include": [
+      "stylus writing on the e-ink screen",
+      "handwriting turning into typed text",
+      "slim tablet sliding into a backpack"
+    ],
+    "platform": "Instagram Reels"
+  },
+  {
+    "id": "fashion-01",
+    "brand": "Wovenmoth",
+    "product": "Upcycled denim jackets, each one-of-a-kind",
+    "audience": "Sustainability-minded Gen Z shoppers aged 17-26",
+    "goal": "Launch the autumn drop and grow the brand's following",
+    "tone": "Raw, artsy, DIY",
+    "key_message": "No two jackets alike, none of them new.",
+    "must_include": [
+      "hands stitching denim patches",
+      "model walking through a street market",
+      "'one of one' tag close-up"
+    ],
+    "platform": "TikTok"
+  },
+  {
+    "id": "fashion-02",
+    "brand": "Solegrove",
+    "product": "Sneakers made with cactus-based vegan leather",
+    "audience": "Eco-conscious professionals aged 25-40 who want everyday sneakers",
+    "goal": "Drive online sales of the new white colourway",
+    "tone": "Clean, optimistic, modern",
+    "key_message": "Plant-made sneakers that go with everything.",
+    "must_include": [
+      "cactus field dissolving into the sneaker",
+      "white sneakers on a city sidewalk",
+      "vegan leather texture close-up"
+    ],
+    "platform": "Instagram Reels"
+  },
+  {
+    "id": "fashion-03",
+    "brand": "Fellstitch",
+    "product": "Merino wool base layers for hiking and everyday wear",
+    "audience": "Hikers and outdoor commuters aged 25-50",
+    "goal": "Grow winter sales and position merino as an everyday fabric",
+    "tone": "Rugged, honest, understated",
+    "key_message": "Warm on the trail, fresh at the office.",
+    "must_include": [
+      "hiker on a frosty ridge at dawn",
+      "same person walking into an office",
+      "merino fabric texture close-up"
+    ],
+    "platform": "YouTube Shorts"
+  },
+  {
+    "id": "fashion-04",
+    "brand": "Glintwork",
+    "product": "Minimalist recycled-silver jewellery: rings, chains and hoops",
+    "audience": "Shoppers aged 20-35 who stack everyday jewellery",
+    "goal": "Drive gift sales for the holiday season",
+    "tone": "Intimate, elegant, softly lit",
+    "key_message": "Small silver pieces you'll never take off.",
+    "must_include": [
+      "rings stacking on a hand in soft light",
+      "gift box opening",
+      "recycled silver callout"
+    ],
+    "platform": "Instagram Reels"
+  },
+  {
+    "id": "almaty-01",
+    "brand": "Aport & Ash Roastery",
+    "product": "Specialty coffee shop and roastery near Panfilov Park in Almaty",
+    "audience": "Students and young professionals in central Almaty",
+    "goal": "Increase weekday morning footfall at the new location",
+    "tone": "Friendly, local, mountain-morning fresh",
+    "key_message": "Fresh-roasted coffee with a mountain view, five minutes from Panfilov Park.",
+    "must_include": [
+      "snowy Zailiysky Alatau peaks behind the café",
+      "barista pouring a flat white",
+      "price in tenge on screen",
+      "address card on the last shot"
+    ],
+    "platform": "Instagram Reels"
+  },
+  {
+    "id": "almaty-02",
+    "brand": "Tandyr Lane",
+    "product": "Takeaway bakery with tandyr-baked samsa and fresh lepyoshka bread",
+    "audience": "Office workers and families in Almaty's Bostandyk district",
+    "goal": "Launch lunchtime delivery and grow online orders",
+    "tone": "Warm, homey, mouth-watering",
+    "key_message": "Samsa straight from the tandyr, at your desk by lunch.",
+    "must_include": [
+      "baker pressing dough onto the tandyr wall",
+      "golden samsa breaking open with steam",
+      "delivery bag handoff at an office door",
+      "price in tenge on screen"
+    ],
+    "platform": "TikTok"
+  },
+  {
+    "id": "almaty-03",
+    "brand": "Upslope Rentals",
+    "product": "Ski and snowboard rental with gear delivered to the Shymbulak and Medeu slopes",
+    "audience": "Tourists and Almaty residents who ski a few times a season",
+    "goal": "Fill weekend rental bookings for the ski season",
+    "tone": "Crisp, adventurous, easygoing",
+    "key_message": "Skip the rental queue: your gear meets you at the slope.",
+    "must_include": [
+      "skis handed over at a car on the mountain road",
+      "fresh powder run on the slopes",
+      "booking QR code on screen"
+    ],
+    "platform": "YouTube Shorts"
+  },
+  {
+    "id": "almaty-04",
+    "brand": "Boulderyurt",
+    "product": "Bouldering gym with a yurt-shaped climbing hall",
+    "audience": "Beginner climbers aged 18-35 and Almaty's expat community",
+    "goal": "Sell first-visit intro sessions and monthly memberships",
+    "tone": "Community-driven, energetic, welcoming",
+    "key_message": "Your first climb is easier than you think, and the people make it.",
+    "must_include": [
+      "climber topping out under the yurt-shaped dome",
+      "chalky hands in a high-five",
+      "intro session price in tenge"
+    ],
+    "platform": "TikTok"
+  }
+]

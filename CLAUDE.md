@@ -49,8 +49,10 @@ System tools outside uv, expected on PATH: `ffmpeg`/`ffprobe` (video) and `gitle
 
 ### Modes and spend cap
 
-- `VIDEO_MODE=mock` (default) costs $0: no network calls to Higgsfield or Gemini, no API keys
-  read. `VIDEO_MODE=live` calls the real APIs.
+- `VIDEO_MODE` controls video generation only. `mock` (default) costs $0: no calls to
+  Higgsfield or Gemini clip QA, no Higgsfield keys read. `live` calls the real APIs.
+- Brief search ignores `VIDEO_MODE`: it uses Gemini embeddings (free tier) whenever
+  `GEMINI_API_KEY` is set, keyword scores otherwise. Tests unset the key to get keywords.
 - `MAX_SPEND_USD` (default 8) caps Higgsfield spend. Before each live generation, refuse it if
   spend so far in the run plus that clip's estimate would exceed the cap.
 
@@ -74,6 +76,8 @@ so cost and latency can be reported per model.
 - `@server.tool()` returns the original function, so tests can call tools directly.
 - `await server.call_tool(name, args)` returns a `CallToolResult`; use `.structured_content`
   to test through the MCP layer.
+- A tool returning a Pydantic model gets `.structured_content` = that model's dict (not wrapped
+  in `{"result": ...}`). Invalid arguments make `server.call_tool` raise `ToolError`.
 
 **higgsfield-client 0.2.0** (`import higgsfield_client`)
 - Credentials: `HF_KEY` = `key_id:secret` (fallback: `HF_API_KEY` + `HF_API_SECRET`), read
@@ -94,3 +98,13 @@ so cost and latency can be reported per model.
 
 **google-genai 2.34.0**
 - `genai.Client()` reads `GOOGLE_API_KEY`, else `GEMINI_API_KEY` (the former wins if both set).
+- Embeddings: `gemini-embedding-2` (GA, free tier, 3072 dims, unit-normalized). It ignores
+  `task_type`; put the task in the text: `task: search result | query: {q}` for queries,
+  `title: {t} | text: {body}` for documents. Its vectors are incompatible with
+  `gemini-embedding-001`, so re-embed when switching.
+- `embed_content(contents=[str, str, ...])` returns ONE combined embedding for
+  `gemini-embedding-2`. For one vector per text, pass `[types.Content(parts=[types.Part(text=t)])
+  for t in texts]`.
+
+**python-dotenv**
+- `load_dotenv()` with no argument searches up from the calling file, not the cwd; pass a path.
