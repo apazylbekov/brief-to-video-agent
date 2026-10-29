@@ -18,3 +18,5 @@ def offline(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
         monkeypatch.delenv(key, raising=False)
     monkeypatch.setenv("VIDEO_MODE", "mock")
     monkeypatch.setattr(config, "BRIEF_VECTORS_PATH", tmp_path / "brief_vectors.npy")
+    monkeypatch.setattr(config, "RUNS_DIR", tmp_path / "runs")
+    monkeypatch.setattr(config, "ASSETS_DIR", tmp_path / "assets")

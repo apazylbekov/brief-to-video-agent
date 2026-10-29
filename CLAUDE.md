@@ -78,6 +78,12 @@ so cost and latency can be reported per model.
   to test through the MCP layer.
 - A tool returning a Pydantic model gets `.structured_content` = that model's dict (not wrapped
   in `{"result": ...}`). Invalid arguments make `server.call_tool` raise `ToolError`.
+- Only `ToolError` text reaches the client (as `is_error=True`, prefixed
+  `Error executing tool <name>: `); any other exception is hidden as a crash.
+- `SkipValidation[list[Model]]` on a tool parameter keeps the schema but passes the raw JSON to
+  the function. `Field(min_length=...)` would still validate (and emit `minLength` for an
+  array), so put `minItems`/`maxItems` in `json_schema_extra`.
+- `mcp.Client(server)` connects in-process (tests); `(await client.list_tools()).tools`.
 
 **higgsfield-client 0.2.0** (`import higgsfield_client`)
 - Credentials: `HF_KEY` = `key_id:secret` (fallback: `HF_API_KEY` + `HF_API_SECRET`), read
@@ -95,6 +101,20 @@ so cost and latency can be reported per model.
   Source: https://docs.higgsfield.ai/docs/concepts/billing-and-retention
 - Billing: only successful generations are charged; `failed`/`nsfw` are refunded; a queued
   request can be cancelled for a refund before processing starts.
+- Models in `app/config.py`: Kling 3.0 Standard (draft) and Pro (quality),
+  `kling-video/v3.0/{std,pro}/{text,image}-to-video`. Both: integer `duration` 3-15, `sound`
+  `"on"`/`"off"`, `cfg_scale`. Text-to-video adds `aspect_ratio` (`"16:9"`, `"9:16"`, `"1:1"`);
+  image-to-video adds `image_url` (public URL of the first frame) and has no `aspect_ratio`.
+  Result: `video.url`. The catalog isn't in the docs index; per-model pages live at
+  `https://docs.higgsfield.ai/docs/models/<model>/<workflow>.md` (e.g. `kling-3/pro-text-to-video`).
+- The estimate response has more than the docs show:
+  `{"type": "estimate", "credits": "5.712", "usd": "0.357", "discount": {...}}`; `usd` is net
+  of the discount. Prices are linear per second, rounded UP to $0.001. At 9:16 with sound off:
+  Standard $0.0714/s, Pro $0.0952/s; sound on costs 50% more; image-to-video costs the same as
+  text-to-video; Kling 3.0 Turbo has no `sound` field.
+- The estimate endpoint ignores unknown fields (returns 200), so it does not validate a body.
+  Errors: `400 {"detail": "duration: 2 is less than the minimum of 3"}`,
+  `404 {"detail": "model_not_found"}`.
 
 **google-genai 2.34.0**
 - `genai.Client()` reads `GOOGLE_API_KEY`, else `GEMINI_API_KEY` (the former wins if both set).

@@ -3,9 +3,10 @@
 from typing import Annotated
 
 from mcp.server.mcpserver import MCPServer
-from pydantic import Field
+from mcp.server.mcpserver.exceptions import ToolError
+from pydantic import Field, SkipValidation
 
-from app import retrieval
+from app import higgsfield, retrieval, shot_list
 
 server = MCPServer("brief-to-video-agent")
 
@@ -21,6 +22,33 @@ def search_briefs(
     "keyword" (share of the request's keywords found in the brief, 0 to 1).
     """
     return retrieval.search(query, k)
+
+
+@server.tool()
+def save_shot_list(
+    brief_id: Annotated[str, Field(description="id of the brief, from search_briefs")],
+    # SkipValidation: the schema still shows the agent every Shot rule, but validation happens
+    # in shot_list.save, which reports all problems in one readable list instead of
+    # pydantic's raw dump. Field(min_length=...) would still validate, so the item limits are
+    # schema-only.
+    shots: Annotated[
+        SkipValidation[list[shot_list.Shot]],
+        Field(
+            description="3-4 shots, 20 s in total at most",
+            json_schema_extra={"minItems": 3, "maxItems": 4},
+        ),
+    ],
+) -> shot_list.SavedShotList:
+    """Validate a 3-4 shot list for a brief, save it as runs/<run_id>/shots.json, and price it.
+
+    Returns the run_id and the estimated cost per shot and in total. If anything is invalid,
+    nothing is saved and the error lists every problem to fix before calling again.
+    """
+    try:
+        return shot_list.save(brief_id, shots)
+    except (shot_list.ShotListError, higgsfield.HiggsfieldError) as exc:
+        # Only ToolError text reaches the agent; other exceptions are hidden as crashes.
+        raise ToolError(str(exc)) from exc
 
 
 if __name__ == "__main__":
