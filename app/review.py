@@ -109,6 +109,9 @@ def record(
             reasons=reasons,
             reviewed_at=reviewed_at,
         )
+        # Reviews are only ever appended, so this position stays this review's. (Matching on
+        # reviewed_at, whole seconds, also hit a second review of the shot in the same second.)
+        position = len(run.reviews)
         run.reviews.append(review)
         shot_list.save_run(run_id, run)
     run_log.append(
@@ -130,9 +133,7 @@ def record(
     regeneration, new_clip, next_step = _act_on(run_id, shot.index, verdict, earlier)
     with _lock:
         run = shot_list.load(run_id)
-        for stored in run.reviews:
-            if stored.shot == shot.index and stored.reviewed_at == reviewed_at:
-                stored.regeneration = regeneration
+        run.reviews[position].regeneration = regeneration
         shot_list.save_run(run_id, run)
 
     return RecordedReview(

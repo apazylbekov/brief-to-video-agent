@@ -6,7 +6,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field, SkipValidation
 
-from app import clips, retrieval, review, shot_list
+from app import clips, report, retrieval, review, shot_list
 from app.errors import ReportableError
 
 server = MCPServer("brief-to-video-agent")
@@ -100,6 +100,18 @@ def record_review(
     """
     try:
         return review.record(run_id, shot_index, verdict, reasons)
+    except ReportableError as exc:
+        raise ToolError(str(exc)) from exc
+
+
+@server.tool()
+def build_report(
+    run_id: Annotated[str, Field(description="run_id returned by save_shot_list")],
+) -> report.BuiltReport:
+    """Write runs/<run_id>/report.html: run totals, the brief, and one card per shot (video,
+    spec, model and reason, QA verdict, attempts, cost and latency). Call it at the end."""
+    try:
+        return report.build(run_id)
     except ReportableError as exc:
         raise ToolError(str(exc)) from exc
 

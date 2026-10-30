@@ -1,6 +1,7 @@
 import asyncio
 import csv
 import subprocess
+from datetime import UTC, datetime, tzinfo
 from decimal import Decimal
 from pathlib import Path
 from typing import Any
@@ -9,7 +10,7 @@ import pytest
 from mcp import Client
 from mcp.types import CallToolResult, TextContent
 
-from app import clips, config, run_log, shot_list
+from app import clips, config, review, run_log, shot_list
 from app.server import server
 from tests.factories import make_shots
 
@@ -119,7 +120,18 @@ def test_pass_is_written_to_runs_csv_and_shots_json(run_id: str) -> None:
     assert _generations(run_id, 1) == ["1"]
 
 
-def test_first_fail_regenerates_once_and_second_fail_is_final(run_id: str) -> None:
+class _FrozenClock(datetime):
+    """Every review gets the same timestamp, as two reviews within one second do."""
+
+    @classmethod
+    def now(cls, tz: tzinfo | None = None) -> "_FrozenClock":
+        return cls(2026, 10, 30, 12, 0, tzinfo=UTC)
+
+
+def test_first_fail_regenerates_once_and_second_fail_is_final(
+    run_id: str, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(review, "datetime", _FrozenClock)
     first = _review(run_id, 1, "fail", "warped hands in the middle frame")
 
     assert first["regeneration"] == "regenerated"

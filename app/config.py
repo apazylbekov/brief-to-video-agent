@@ -6,11 +6,23 @@ from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Literal
 
-from dotenv import load_dotenv
+from dotenv import dotenv_values
 
 ROOT = Path(__file__).resolve().parent.parent
-# Explicit path: load_dotenv() with no argument searches from the caller's file, not the cwd.
-load_dotenv(ROOT / ".env")
+
+
+def load_env(path: Path) -> None:
+    """Like load_dotenv(), except a variable set to "" also takes its .env value.
+
+    .mcp.json passes "${HF_KEY:-}" etc., which arrive as "" when the shell hasn't exported
+    them; .env should still apply then. A non-empty value from the shell always wins.
+    """
+    for name, value in dotenv_values(path).items():
+        if value and not os.environ.get(name):
+            os.environ[name] = value
+
+
+load_env(ROOT / ".env")  # an explicit path, not dotenv's search from the caller's file
 
 DATA_DIR = ROOT / "data"
 BRIEFS_PATH = DATA_DIR / "briefs.json"

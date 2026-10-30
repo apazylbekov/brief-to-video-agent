@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "brief-to-video": {
+      "type": "stdio",
+      "command": "uv",
+      "args": ["run", "--quiet", "python", "-m", "app.server"],
+      "env": {
+        "HF_KEY": "${HF_KEY:-}",
+        "GEMINI_API_KEY": "${GEMINI_API_KEY:-}",
+        "VIDEO_MODE": "${VIDEO_MODE:-}",
+        "MAX_SPEND_USD": "${MAX_SPEND_USD:-}"
+      }
+    }
+  }
+}

@@ -22,6 +22,8 @@ uv run ruff format .         # format
 uv add <pkg>                 # add a dependency; never pip install
 gitleaks git --redact        # scan commit history for secrets before pushing
 git config core.hooksPath .githooks   # once per clone: gitleaks pre-commit hook
+./run.sh "<request>"         # the whole pipeline, headless (Claude spend capped at $2)
+uv run python -m app.smoke "<prompt>"  # one 5 s draft clip, without the agent
 ```
 
 System tools outside uv, expected on PATH: `ffmpeg`/`ffprobe` (video) and `gitleaks` (secrets).
@@ -38,7 +40,25 @@ System tools outside uv, expected on PATH: `ffmpeg`/`ffprobe` (video) and `gitle
   - `generate_clip`
   - `review_clip`
   - `record_review`
-  - `build_report`
+  - `build_report`: writes `runs/<run_id>/report.html` (totals, brief, one card per shot). A
+    card's verdict is for the clip on disk, so a review of an earlier attempt shows as "not
+    reviewed". All agent-written text is HTML-escaped.
+
+### Running it — `.mcp.json`, the skill, `run.sh`
+
+- `.mcp.json` (project scope) starts the server as `brief-to-video` with
+  `uv run --quiet python -m app.server`, passing `HF_KEY`, `GEMINI_API_KEY`, `VIDEO_MODE` and
+  `MAX_SPEND_USD` as `${VAR:-}`. The empty default matters: an unset `${VAR}` with no default is
+  passed as the literal text `${VAR}`. No secret is in the file.
+- Precedence for those variables: non-empty shell value > `.env` > the code's default. A blank
+  value counts as unset (`config.load_env`), so `.mcp.json`'s `""` still lets `.env` apply.
+- The server starts in the directory `claude` is launched from, so launch it from the project
+  root (`run.sh` does).
+- `.claude/skills/brief-to-video/SKILL.md` is the agent's workflow (`/brief-to-video <request>`).
+  It points to the Clip QA rubric below instead of repeating it.
+- `run.sh` loads `.env` without overriding the shell, runs `claude -p "/brief-to-video …"`, saves
+  Claude's JSON as `runs/<run_id>/agent.json`, appends `timestamp, run_id, total_cost_usd,
+  duration_s, outcome` to `runs/agent_runs.csv`, and prints the report path.
 
 ### Video — Higgsfield API
 
@@ -175,6 +195,10 @@ reviews existed (the first nine columns) are upgraded in place, old rows marked 
 - First live generation (2026-10-30): Kling 3.0 Standard text-to-video, 9:16, 5 s, sound off
   gave 720x1280 H.264 at 24 fps, 5.04 s, no audio track, ~3.9 MB; 85.7 s from upload/submit to
   downloaded file; logged at the $0.357 estimate.
+- First agent run, live (2026-10-30): Kling 3.0 Pro gives **1080x1920** (Standard 720x1280),
+  both 24 fps, no audio. Latency per clip 86-129 s (Pro 105.6 s average over 4, Standard
+  106.6 s). Generated text is unreliable: phone-screen and QR text came out garbled on both
+  attempts, so asking the model for readable text, QR codes or prices fails rubric check 4.
 - The estimate endpoint ignores unknown fields (returns 200), so it does not validate a body.
   Errors: `400 {"detail": "duration: 2 is less than the minimum of 3"}`,
   `404 {"detail": "model_not_found"}`.
@@ -191,3 +215,21 @@ reviews existed (the first nine columns) are upgraded in place, old rows marked 
 
 **python-dotenv**
 - `load_dotenv()` with no argument searches up from the calling file, not the cwd; pass a path.
+- `load_dotenv()` never overrides a variable that is set, even to `""`. `config.load_env` uses
+  `dotenv_values()` instead, so blank counts as unset.
+
+**Claude Code 2.1.312** (docs at code.claude.com, plus a probe server under `claude mcp list`)
+- `.mcp.json` expands `${VAR}` and `${VAR:-default}` in `command`, `args`, `env`, `url`,
+  `headers`. Verified: `${VAR:-}` (undocumented) gives `""`; an unset `${VAR}` gives the literal
+  `${VAR}` plus a "Missing environment variables" warning; a variable set to `""` counts as set.
+- A stdio server's cwd and `CLAUDE_PROJECT_DIR` are the directory `claude` was launched in,
+  even if `.mcp.json` sits in a parent folder.
+- `claude -p` loads project `.mcp.json` servers without approval and skips the trust dialog.
+  `claude mcp list` doesn't connect unapproved ones; `claude --settings
+  '{"enabledMcpjsonServers": ["brief-to-video"]}' mcp list` health-checks without a model call.
+- `--allowedTools "mcp__brief-to-video__*"` allows every tool of that server. Read needs no
+  approval inside the working directory, even in `-p`, and returns JPEGs as images.
+- `claude -p "/skill-name args"` expands a project skill; `$ARGUMENTS` gets the args.
+- `--max-budget-usd` is print-only and approximate ("spend can pass the cap"). The JSON result's
+  fields follow the SDK's result message (`total_cost_usd`, `duration_ms`, `subtype`, ...), so
+  `run.sh` reads them defensively.
