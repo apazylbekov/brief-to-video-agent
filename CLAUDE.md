@@ -132,6 +132,9 @@ reviews existed (the first nine columns) are upgraded in place, old rows marked 
   pick up from `.env`, and point the runs directory at `tmp_path` (keep paths in `app/config.py`
   so they can be patched).
 - Secrets live in `.env` (gitignored); `.env.example` documents every variable.
+- CI (`.github/workflows/ci.yml`) runs `ruff check`, `ruff format --check` and `pytest` on every
+  push, with no secrets and ffmpeg installed via apt. Keep it that way: no test may need an API
+  key or network access (fake the HTTP, as the live-path tests do).
 
 ## Verified API facts (checked 2026-10-29)
 

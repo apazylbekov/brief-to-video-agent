@@ -1,0 +1,36 @@
+# Lint and test on every push. The tests run in mock mode and need no API keys, so this
+# workflow uses no secrets and can't spend money on Higgsfield.
+name: CI
+
+on: push
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VIDEO_MODE: mock # the tests force mock mode too; this keeps any stray call free
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # Mock clips and QA frames are made with ffmpeg/ffprobe, which ubuntu-latest doesn't ship.
+      - name: Install ffmpeg
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
+
+      - uses: astral-sh/setup-uv@v10 # caches uv's downloads by default on GitHub-hosted runners
+
+      - name: Install dependencies
+        run: uv sync --locked # Python 3.12 from .python-version; fails if uv.lock is stale
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Check formatting
+        run: uv run ruff format --check .
+
+      - name: Test
+        run: uv run pytest
