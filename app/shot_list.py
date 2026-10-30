@@ -77,6 +77,22 @@ def _images() -> list[str]:
     return sorted(str(p.relative_to(assets)) for p in found)[:20]
 
 
+Regeneration = Literal[
+    "not_needed", "regenerated", "generation_failed", "blocked_by_spend_cap", "already_used"
+]
+
+
+class Review(BaseModel):
+    """One QA verdict, as record_review stores it in shots.json."""
+
+    shot: int
+    attempt: int
+    verdict: Literal["pass", "fail"]
+    reasons: str
+    reviewed_at: str
+    regeneration: Regeneration | None = None  # filled in once the verdict has been acted on
+
+
 class RunShots(BaseModel):
     """What runs/<run_id>/shots.json holds. ShotList adds the rules for lists the agent makes."""
 
@@ -84,6 +100,7 @@ class RunShots(BaseModel):
 
     brief_id: str
     shots: list[Shot]
+    reviews: list[Review] = Field(default_factory=list)
 
 
 class ShotList(RunShots):
@@ -169,10 +186,17 @@ def save(brief_id: str, shots: object) -> SavedShotList:
 def new_run(brief_id: str, shots: list[Shot]) -> tuple[str, Path]:
     """Save shots as a new run and return (run_id, path). List-level rules are the caller's job."""
     run_id = f"{datetime.now(UTC):%Y%m%d-%H%M%S}-{secrets.token_hex(3)}"  # UTC, sortable
+    (config.RUNS_DIR / run_id).mkdir(parents=True)
+    return run_id, save_run(run_id, RunShots(brief_id=brief_id, shots=shots))
+
+
+def save_run(run_id: str, run: RunShots) -> Path:
+    """Write shots.json in one step, so a reader never sees half a file."""
     path = config.RUNS_DIR / run_id / "shots.json"
-    path.parent.mkdir(parents=True)
-    path.write_text(RunShots(brief_id=brief_id, shots=shots).model_dump_json(indent=2) + "\n")
-    return run_id, path
+    partial = path.with_suffix(".json.part")
+    partial.write_text(run.model_dump_json(indent=2) + "\n")
+    partial.replace(path)
+    return path
 
 
 def load(run_id: str) -> RunShots:

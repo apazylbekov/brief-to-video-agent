@@ -1,12 +1,12 @@
 """MCP server exposing the brief-to-video pipeline as tools. Run: uv run python -m app.server"""
 
-from typing import Annotated
+from typing import Annotated, Literal
 
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field, SkipValidation
 
-from app import clips, retrieval, shot_list
+from app import clips, retrieval, review, shot_list
 from app.errors import ReportableError
 
 server = MCPServer("brief-to-video-agent")
@@ -65,6 +65,41 @@ def generate_clip(
     """
     try:
         return clips.generate(run_id, shot_index)
+    except ReportableError as exc:
+        raise ToolError(str(exc)) from exc
+
+
+@server.tool()
+def review_clip(
+    run_id: Annotated[str, Field(description="run_id returned by save_shot_list")],
+    shot_index: Annotated[int, Field(ge=1, description="The shot's index in that list")],
+) -> review.ReviewPacket:
+    """Extract the start, middle and end frames of a shot's clip, with the shot's spec.
+
+    Look at all three frames, judge them with the QA rubric in CLAUDE.md, then call
+    record_review with the verdict.
+    """
+    try:
+        return review.frames(run_id, shot_index)
+    except ReportableError as exc:
+        raise ToolError(str(exc)) from exc
+
+
+@server.tool()
+def record_review(
+    run_id: Annotated[str, Field(description="run_id returned by save_shot_list")],
+    shot_index: Annotated[int, Field(ge=1, description="The shot's index in that list")],
+    verdict: Literal["pass", "fail"],
+    reasons: Annotated[str, Field(min_length=1, max_length=300, description="One line")],
+) -> review.RecordedReview:
+    """Record a QA verdict for a shot's current clip in runs/runs.csv and shots.json.
+
+    Call review_clip first. A shot's first fail is regenerated once right away, within
+    MAX_SPEND_USD (in live mode that takes minutes and costs money); review the new clip the
+    same way. A second fail is final. next_step says what to do.
+    """
+    try:
+        return review.record(run_id, shot_index, verdict, reasons)
     except ReportableError as exc:
         raise ToolError(str(exc)) from exc
 

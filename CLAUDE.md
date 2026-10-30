@@ -50,7 +50,8 @@ System tools outside uv, expected on PATH: `ffmpeg`/`ffprobe` (video) and `gitle
 ### Modes and spend cap
 
 - `VIDEO_MODE` controls video generation only. `mock` (default) costs $0: no calls to
-  Higgsfield or Gemini clip QA, no Higgsfield keys read. `live` calls the real APIs.
+  Higgsfield, no Higgsfield keys read. `live` calls the real APIs. Clip QA calls no API in
+  either mode: the agent reviews the frames itself.
 - Brief search ignores `VIDEO_MODE`: it uses Gemini embeddings (free tier) whenever
   `GEMINI_API_KEY` is set, keyword scores otherwise. Tests unset the key to get keywords.
 - `MAX_SPEND_USD` (default 8) caps total Higgsfield spend. Before every generation (mock too,
@@ -60,13 +61,48 @@ System tools outside uv, expected on PATH: `ffmpeg`/`ffprobe` (video) and `gitle
 - `uv run python -m app.smoke "<prompt>"` generates one 5 s draft clip outside the agent; it
   saves a one-shot run via `shot_list.new_run`, bypassing the 3-4 shot rule for agent lists.
 
+### Clip QA — the rubric the agent applies
+
+QA is the agent's own judgement, not an API call. `review_clip(run_id, shot_index)` extracts
+the start, middle and end frames to `runs/<run_id>/frames/` and returns their paths with the
+shot spec. Open and look at all three frames, judge them against the spec with this rubric,
+then call `record_review(run_id, shot_index, verdict, reasons)`.
+
+A clip **passes** only if every check holds; one failed check makes it **fail**:
+
+1. **Subject present:** the spec's `subject` is clearly visible and recognisable.
+2. **Setting and lighting match:** the frames show the spec's `setting` and `lighting`
+   (place, time of day, quality of light).
+3. **Camera move plausible:** the change from start to middle to end fits `camera_move`
+   (a dolly in gets closer, a pan sweeps sideways, `static` barely changes), with no jumps.
+4. **No warped faces, hands or text:** no distorted faces, malformed hands or garbled
+   lettering in any frame.
+
+The verdict is `pass` or `fail`, with one line of reasons (300 characters at most). For a fail,
+name each failed check and its frame, e.g. `hands warped in the middle frame; lighting is
+midday, not sunrise`. For a pass, say briefly what matched.
+
+- **Mock mode:** clips are ffmpeg test patterns (`mode` is `"mock"` in `review_clip`'s
+  result), so the rubric can't apply. Record `pass` with reasons `mock placeholder`.
+- **One regeneration:** a shot's first `fail` is regenerated once by `record_review` itself
+  (same spec, within `MAX_SPEND_USD`); review the new clip the same way. A second `fail` is
+  final. `next_step` in the result says what to do.
+- `record_review` refuses a verdict unless `review_clip` ran on the shot's current clip.
+- Verdicts go to `runs/runs.csv` (a `review` row) and to `reviews` in the run's `shots.json`.
+
 ### Run log — `runs/runs.csv`
 
 Every generation and every review appends one row, including model, cost (USD) and latency,
-so cost and latency can be reported per model. Generation columns: `timestamp, run_id, shot,
-attempt, model, mode, seconds, latency_s, cost_usd`; `attempt` counts per run and shot, and a
-refused call adds no row. Live cost: the estimate once Higgsfield accepts the job; $0 if it ends
-failed/nsfw/canceled or the submit is rejected; the estimate if the outcome is unknown.
+so cost and latency can be reported per model. Columns: `timestamp, run_id, shot, attempt,
+model, mode, seconds, latency_s, cost_usd, event, verdict, reasons`. Logs written before
+reviews existed (the first nine columns) are upgraded in place, old rows marked `generation`.
+
+- **`event = generation`:** `attempt` counts generation rows per run and shot, and a refused
+  call adds no row. Live cost: the estimate once Higgsfield accepts the job; $0 if it ends
+  failed/nsfw/canceled or the submit is rejected; the estimate if the outcome is unknown.
+- **`event = review`:** `attempt` and `mode` are those of the shot's latest generation (the
+  clip reviewed), `model` is its video model, `cost_usd` is 0, and `latency_s` runs from frame
+  extraction to the verdict. Filter on `event` before averaging latency per model.
 
 ## Rules
 

@@ -68,11 +68,11 @@ class _Charge:
 
 def generate(run_id: str, shot_index: int) -> GeneratedClip:
     """Generate one shot as runs/<run_id>/shot_<index>.mp4 and log the attempt."""
-    shot = _find_shot(run_id, shot_index)
+    shot = find_shot(run_id, shot_index)
     model = config.VIDEO_MODELS[shot.model]
     mode = config.video_mode()
     estimate = higgsfield.estimate_usd(model, shot.prompt, shot.duration_s, shot.image is not None)
-    clip_path = config.RUNS_DIR / run_id / f"shot_{shot.index}.mp4"
+    clip_path = path_for(run_id, shot.index)
     what = f"shot {shot.index} of run {run_id} ({model.id}, {shot.duration_s} s)"
     charge = _Charge()
 
@@ -106,7 +106,11 @@ def generate(run_id: str, shot_index: int) -> GeneratedClip:
     )
 
 
-def _find_shot(run_id: str, shot_index: int) -> shot_list.Shot:
+def path_for(run_id: str, shot_index: int) -> Path:
+    return config.RUNS_DIR / run_id / f"shot_{shot_index}.mp4"
+
+
+def find_shot(run_id: str, shot_index: int) -> shot_list.Shot:
     shots = shot_list.load(run_id).shots
     for shot in shots:
         if shot.index == shot_index:
