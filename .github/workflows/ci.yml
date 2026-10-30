@@ -21,7 +21,9 @@ jobs:
       - name: Install ffmpeg
         run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ffmpeg
 
-      - uses: astral-sh/setup-uv@v10 # caches uv's downloads by default on GitHub-hosted runners
+      # setup-uv publishes no moving major tag (an @v10 fails to resolve), so pin the commit, as
+      # its README does. It caches uv's downloads by default on GitHub-hosted runners.
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
 
       - name: Install dependencies
         run: uv sync --locked # Python 3.12 from .python-version; fails if uv.lock is stale
