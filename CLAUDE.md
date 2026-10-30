@@ -53,13 +53,20 @@ System tools outside uv, expected on PATH: `ffmpeg`/`ffprobe` (video) and `gitle
   Higgsfield or Gemini clip QA, no Higgsfield keys read. `live` calls the real APIs.
 - Brief search ignores `VIDEO_MODE`: it uses Gemini embeddings (free tier) whenever
   `GEMINI_API_KEY` is set, keyword scores otherwise. Tests unset the key to get keywords.
-- `MAX_SPEND_USD` (default 8) caps Higgsfield spend. Before each live generation, refuse it if
-  spend so far in the run plus that clip's estimate would exceed the cap.
+- `MAX_SPEND_USD` (default 8) caps total Higgsfield spend. Before every generation (mock too,
+  at mock prices), get the estimate and refuse if the total `cost_usd` in `runs/runs.csv`
+  (all runs) plus estimates of clips still generating plus this estimate would exceed the cap.
+- Mock `generate_clip` writes a 9:16 ffmpeg test-pattern clip and logs $0.
+- `uv run python -m app.smoke "<prompt>"` generates one 5 s draft clip outside the agent; it
+  saves a one-shot run via `shot_list.new_run`, bypassing the 3-4 shot rule for agent lists.
 
 ### Run log — `runs/runs.csv`
 
 Every generation and every review appends one row, including model, cost (USD) and latency,
-so cost and latency can be reported per model.
+so cost and latency can be reported per model. Generation columns: `timestamp, run_id, shot,
+attempt, model, mode, seconds, latency_s, cost_usd`; `attempt` counts per run and shot, and a
+refused call adds no row. Live cost: the estimate once Higgsfield accepts the job; $0 if it ends
+failed/nsfw/canceled or the submit is rejected; the estimate if the outcome is unknown.
 
 ## Rules
 
@@ -84,6 +91,8 @@ so cost and latency can be reported per model.
   the function. `Field(min_length=...)` would still validate (and emit `minLength` for an
   array), so put `minItems`/`maxItems` in `json_schema_extra`.
 - `mcp.Client(server)` connects in-process (tests); `(await client.list_tools()).tools`.
+- Sync tool functions run in worker threads (`anyio.to_thread`), so tool calls can overlap:
+  shared state (the spend check, `runs.csv` appends) needs a lock.
 
 **higgsfield-client 0.2.0** (`import higgsfield_client`)
 - Credentials: `HF_KEY` = `key_id:secret` (fallback: `HF_API_KEY` + `HF_API_SECRET`), read
@@ -112,6 +121,24 @@ so cost and latency can be reported per model.
   of the discount. Prices are linear per second, rounded UP to $0.001. At 9:16 with sound off:
   Standard $0.0714/s, Pro $0.0952/s; sound on costs 50% more; image-to-video costs the same as
   text-to-video; Kling 3.0 Turbo has no `sound` field.
+- SDK internals (read from the installed source): `submit(path, arguments=...)` returns a
+  `SyncRequestController` (`.request_id`, `.status()`, `.get()`). `status()` returns a class
+  (`Queued`, `InProgress`, `Completed`, `Failed`, `NSFW`, `Cancelled`; `DONE_STATUSES` is the
+  finished ones) and drops the body; `get()` returns the final JSON (`video.url`, or `error`).
+  `upload_file(path)` returns a `public_url` to pass as `image_url` (jpeg/png/webp/gif).
+- The SDK retries 408/429/5xx 3 times within ~0.6 s, POSTs included, but not network errors
+  (raw `httpx.TransportError`). Its errors are `HiggsfieldClientError` with the
+  `httpx.HTTPStatusError` as `__cause__`. `submit()` takes no headers, so `app/clips.py` sets
+  `Idempotency-Key` on the client's `_client` (the SDK's httpx session).
+- `Idempotency-Key` (optional, 1-255 visible ASCII): the same key and body return the original
+  `request_id` without a second charge; a different body gets 422. Retry an ambiguous submit
+  with the same key. Docs: concepts/idempotency, concepts/errors.
+- Retry with backoff: network errors, 408, 423, 429 (queue full), 500, 502-504. Don't retry
+  400, 401, 403 (insufficient balance), 404, 422. Poll status from 2 s, x1.5 up to 10 s, with
+  jitter (concepts/polling). Failed payload: `{"status": "failed", "error": "..."}`.
+- First live generation (2026-10-30): Kling 3.0 Standard text-to-video, 9:16, 5 s, sound off
+  gave 720x1280 H.264 at 24 fps, 5.04 s, no audio track, ~3.9 MB; 85.7 s from upload/submit to
+  downloaded file; logged at the $0.357 estimate.
 - The estimate endpoint ignores unknown fields (returns 200), so it does not validate a body.
   Errors: `400 {"detail": "duration: 2 is less than the minimum of 3"}`,
   `404 {"detail": "model_not_found"}`.

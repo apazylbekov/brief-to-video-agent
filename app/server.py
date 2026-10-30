@@ -6,7 +6,8 @@ from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 from pydantic import Field, SkipValidation
 
-from app import higgsfield, retrieval, shot_list
+from app import clips, retrieval, shot_list
+from app.errors import ReportableError
 
 server = MCPServer("brief-to-video-agent")
 
@@ -46,8 +47,25 @@ def save_shot_list(
     """
     try:
         return shot_list.save(brief_id, shots)
-    except (shot_list.ShotListError, higgsfield.HiggsfieldError) as exc:
+    except ReportableError as exc:
         # Only ToolError text reaches the agent; other exceptions are hidden as crashes.
+        raise ToolError(str(exc)) from exc
+
+
+@server.tool()
+def generate_clip(
+    run_id: Annotated[str, Field(description="run_id returned by save_shot_list")],
+    shot_index: Annotated[int, Field(ge=1, description="The shot's index in that list")],
+) -> clips.GeneratedClip:
+    """Generate one shot's clip and save it as runs/<run_id>/shot_<index>.mp4.
+
+    Checks the clip's estimate first and refuses if total spend logged in runs/runs.csv would
+    pass MAX_SPEND_USD. Live mode calls Higgsfield (often several minutes); mock mode writes a
+    free placeholder. Every attempt is logged; failed or moderated generations cost $0.
+    """
+    try:
+        return clips.generate(run_id, shot_index)
+    except ReportableError as exc:
         raise ToolError(str(exc)) from exc
 
 

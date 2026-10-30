@@ -7,13 +7,14 @@ from higgsfield_client.auth import get_credential_key
 from higgsfield_client.exceptions import CredentialsMissedError
 
 from app import config
+from app.errors import ReportableError
 
 # Estimates don't depend on the image (checked 2026-10-29), so image-to-video shots are priced
 # with this stand-in before the real file is uploaded at generation time.
 ESTIMATE_IMAGE_URL = "https://example.com/first-frame.jpg"
 
 
-class HiggsfieldError(Exception):
+class HiggsfieldError(ReportableError):
     """A Higgsfield call failed. The message is written for the agent to read."""
 
 

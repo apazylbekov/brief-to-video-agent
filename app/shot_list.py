@@ -1,14 +1,17 @@
 """Shot lists: the Shot and ShotList models, and saving a validated list as a new run."""
 
+import re
 import secrets
 from datetime import UTC, datetime
 from decimal import Decimal
+from pathlib import Path
 from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, ValidationError, field_validator
 from pydantic_core import ErrorDetails
 
 from app import config, higgsfield, retrieval
+from app.errors import ReportableError
 
 MAX_TOTAL_S = 20
 IMAGE_SUFFIXES = (".jpg", ".jpeg", ".png", ".webp")
@@ -74,10 +77,16 @@ def _images() -> list[str]:
     return sorted(str(p.relative_to(assets)) for p in found)[:20]
 
 
-class ShotList(BaseModel):
+class RunShots(BaseModel):
+    """What runs/<run_id>/shots.json holds. ShotList adds the rules for lists the agent makes."""
+
     model_config = ConfigDict(extra="forbid")
 
     brief_id: str
+    shots: list[Shot]
+
+
+class ShotList(RunShots):
     shots: list[Shot] = Field(min_length=3, max_length=4)
 
     @field_validator("brief_id")
@@ -106,7 +115,7 @@ class ShotList(BaseModel):
         return shots
 
 
-class ShotListError(ValueError):
+class ShotListError(ReportableError):
     """The shot list is invalid. The message lists every problem for the agent to fix."""
 
 
@@ -142,10 +151,7 @@ def save(brief_id: str, shots: object) -> SavedShotList:
         )
         for s in shot_list.shots
     ]
-    run_id = f"{datetime.now(UTC):%Y%m%d-%H%M%S}-{secrets.token_hex(3)}"  # UTC, sortable
-    path = config.RUNS_DIR / run_id / "shots.json"
-    path.parent.mkdir(parents=True)
-    path.write_text(shot_list.model_dump_json(indent=2) + "\n")
+    run_id, path = new_run(shot_list.brief_id, shot_list.shots)
 
     return SavedShotList(
         run_id=run_id,
@@ -160,15 +166,43 @@ def save(brief_id: str, shots: object) -> SavedShotList:
     )
 
 
+def new_run(brief_id: str, shots: list[Shot]) -> tuple[str, Path]:
+    """Save shots as a new run and return (run_id, path). List-level rules are the caller's job."""
+    run_id = f"{datetime.now(UTC):%Y%m%d-%H%M%S}-{secrets.token_hex(3)}"  # UTC, sortable
+    path = config.RUNS_DIR / run_id / "shots.json"
+    path.parent.mkdir(parents=True)
+    path.write_text(RunShots(brief_id=brief_id, shots=shots).model_dump_json(indent=2) + "\n")
+    return run_id, path
+
+
+def load(run_id: str) -> RunShots:
+    """Read a saved run. Shots are re-validated, so a since-deleted image is caught here."""
+    path = config.RUNS_DIR / run_id / "shots.json"
+    # run_id comes from the agent: only run-id characters, so it can't point outside runs/.
+    if not re.fullmatch(r"[\w-]+", run_id) or not path.is_file():
+        raise ShotListError(
+            f"unknown run_id {run_id!r}; use the run_id that save_shot_list returned"
+        )
+    try:
+        return RunShots.model_validate_json(path.read_text())
+    except ValidationError as exc:
+        problems = "\n".join(_problems(exc))
+        raise ShotListError(f"runs/{run_id}/shots.json is no longer valid:\n{problems}") from exc
+
+
 # --- Error messages for the agent ---------------------------------------------------------
 
 
 def _describe(exc: ValidationError) -> str:
-    lines = [f"- {_where(e['loc'])}: {_message(e)}" for e in exc.errors()]
+    lines = _problems(exc)
     return (
         f"Shot list rejected, nothing saved. Fix all {len(lines)} problem(s) and call "
         "save_shot_list again (shots[0] is the first shot):\n" + "\n".join(lines)
     )
+
+
+def _problems(exc: ValidationError) -> list[str]:
+    return [f"- {_where(e['loc'])}: {_message(e)}" for e in exc.errors()]
 
 
 def _where(loc: tuple[int | str, ...]) -> str:

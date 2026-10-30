@@ -2,7 +2,7 @@
 
 import os
 from dataclasses import dataclass
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from pathlib import Path
 from typing import Literal
 
@@ -65,3 +65,15 @@ def video_mode() -> Literal["mock", "live"]:
     if mode not in ("mock", "live"):
         raise ValueError(f"VIDEO_MODE must be 'mock' or 'live', got {mode!r}")
     return mode
+
+
+def max_spend_usd() -> Decimal:
+    """MAX_SPEND_USD at call time: the cap on total spend logged in runs/runs.csv."""
+    raw = (os.environ.get("MAX_SPEND_USD") or "8").strip()
+    try:
+        cap = Decimal(raw)
+    except InvalidOperation:
+        cap = Decimal("NaN")
+    if not cap.is_finite() or cap < 0:
+        raise ValueError(f"MAX_SPEND_USD must be a number of dollars, 0 or more; got {raw!r}")
+    return cap
